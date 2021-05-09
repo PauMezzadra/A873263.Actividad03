@@ -37,8 +37,15 @@ namespace A873263.Actividad03
                     while (!reader.EndOfStream)
                     {
                         var linea = reader.ReadLine();
-                        var unPlan = new PlanDeCuenta(linea);
-                        planes.Add(unPlan);
+                        if (linea == "Codigo|Nombre|Tipo")
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            var unPlan = new PlanDeCuenta(linea);
+                            planes.Add(unPlan);
+                        }
                     }
                 }
             }

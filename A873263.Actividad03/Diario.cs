@@ -18,6 +18,7 @@ namespace A873263.Actividad03
         public decimal Haber { get; set; }
 
         List<Diario> unDiario = new List<Diario>();
+        List<Diario> asiento = new List<Diario>();
 
         public Diario()
         {
@@ -41,8 +42,15 @@ namespace A873263.Actividad03
                     while (!reader.EndOfStream)
                     {
                         var linea = reader.ReadLine();
-                        var elDiario = new Diario(linea);
-                        unDiario.Add(elDiario);
+                        if (linea == "NroAsiento|Fecha|CodigoCuenta|Debe|Haber")
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            var elDiario = new Diario(linea);
+                            unDiario.Add(elDiario);
+                        }
                     }
                 }
             }
@@ -60,8 +68,10 @@ namespace A873263.Actividad03
 
         public void Grabar()
         {
+           
             using (var writer = new StreamWriter(diario, append: false))
             {
+                writer.WriteLine("NroAsiento|Fecha|CodigoCuenta|Debe|Haber");
                 foreach (var diar in unDiario)
                 {
                     var linea = diar.ObtenerLineaDatos();
@@ -73,16 +83,23 @@ namespace A873263.Actividad03
 
         public int ProximoNroAsiento()
         {
-            int proximoAsiento = (unDiario[unDiario.Count - 1].NroAsiento) + 1;
+            int proximoAsiento;
+            if (unDiario.Count == 0)
+            {
+                proximoAsiento = 1;
+            }
+            else
+            {
+                proximoAsiento = (unDiario[unDiario.Count - 1].NroAsiento) + 1;
+            }
             return proximoAsiento;
-
         }
 
         public void Iniciar()
         {
             const string opcionDebe = "D";
             const string opcionHaber = "H";
-            const string opcionSalir = "S";
+            const string opcionSalir = "F";
 
             string opcionMenu = "";
             int nroAsiento;
@@ -103,7 +120,7 @@ namespace A873263.Actividad03
             {
                 opcionMenu = Validaciones.PedirStrNoVac("Presione:\n\tD - Para cargar en el DEBE" +
                                                         "\n\tH - Para cargar en el HABER" +
-                                                        "\n\tS - Para Salir de la carga de datos");
+                                                        "\n\tF - Para finalizar la carga del asiento actual\n");
 
                 switch (opcionMenu)
                 {
@@ -120,7 +137,7 @@ namespace A873263.Actividad03
                         } while (!unPlan.BuscarCodigo(codigoCuenta));
                         elMonto = Validaciones.PedirDecimal("Ingrese el monto que desea cargar:");
                         nuevoDiario = new Diario(nroAsiento, laFecha, codigoCuenta, elMonto, 0);
-                        unDiario.Add(nuevoDiario);
+                        asiento.Add(nuevoDiario);
 
                         break;
 
@@ -137,20 +154,26 @@ namespace A873263.Actividad03
                         } while (!unPlan.BuscarCodigo(codigoCuenta));
                         elMonto = Validaciones.PedirDecimal("Ingrese el monto que desea cargar:");
                         nuevoDiario = new Diario(nroAsiento, laFecha, codigoCuenta, 0, elMonto);
-                        unDiario.Add(nuevoDiario);
+                        asiento.Add(nuevoDiario);
 
                         break;
 
                     case opcionSalir:
 
-                        foreach (Diario dia in unDiario)
+                        foreach (Diario dia in asiento)
                         {
-                            totalDebe = totalDebe + dia.Debe;
+                            if (dia.NroAsiento == nroAsiento)
+                            {
+                                totalDebe = totalDebe + dia.Debe;
+                            }
                         }
 
-                        foreach (Diario dia in unDiario)
+                        foreach (Diario dia in asiento)
                         {
-                            totalHaber = totalHaber + dia.Haber;
+                            if (dia.NroAsiento == nroAsiento)
+                            {
+                                totalHaber = totalHaber + dia.Haber;
+                            }
                         }
 
                         if (totalDebe != totalHaber)
@@ -164,22 +187,55 @@ namespace A873263.Actividad03
                                 Console.WriteLine($"El HABER tiene cargados ${totalHaber - totalDebe} más que el Debe.");
                             }
                             Console.WriteLine("\nEste Asiento no puede guardarse.");
+
+                            asiento.Clear();
                         }
                         else
                         {
-                            Grabar();
-                            Console.WriteLine("El Asiento ha sido grabado con éxito");
+                            Console.WriteLine("Ud. ha cargado el siguiente asiento diario:\n");
+                            Console.WriteLine("NroAsiento |       Fecha         |CodigoCuenta |    Debe    |     Haber    |\n");
+                            foreach (Diario d in asiento)
+                            {
+                                if (d.Fecha == laFecha)
+                                {
+                                    Console.WriteLine($" {d.NroAsiento}         | {d.Fecha} |     {d.CodigoCuenta}         |      {d.Debe}     |   {d.Haber}");
+                                }
+                            }
+                            Console.WriteLine();
+                            foreach (Diario d in asiento)
+                            {
+                                unDiario.Add(d);
+                            }
+                            asiento.Clear();
                         }
-
                         break;
 
                     default:
                         Console.WriteLine("Opción no válida");
                         break;
                 }
-
-
             } while (opcionMenu != opcionSalir);
+        }
+
+        public void Continuar()
+        {
+            ConsoleKeyInfo key;
+            do
+            {
+                Console.WriteLine("Desea seguir cargando asientos? S / N\n");
+                key = Console.ReadKey(intercept: true);
+                if (key.Key == ConsoleKey.N)
+                {
+                    Grabar();
+                    Console.WriteLine("Aplicación finalizada. Presione cualquier tecla para salir.");
+                }
+                else if (key.Key == ConsoleKey.S)
+                {
+                    asiento.Clear();
+                    Iniciar();
+                }
+
+            } while (key.Key == ConsoleKey.S);
         }
     }
 }

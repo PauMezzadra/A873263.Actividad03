@@ -10,9 +10,9 @@ namespace A873263.Actividad03
     {
         static void Main(string[] args)
         {
-
             Diario unNuevoDiario = new Diario();
             unNuevoDiario.Iniciar();
+            unNuevoDiario.Continuar();
             Console.ReadKey();
         }
     }
