@@ -111,7 +111,6 @@ namespace A873263.Actividad03
             Diario nuevoDiario;
             PlanDeCuenta unPlan = new PlanDeCuenta();
             unPlan.Levantar();
-            LevantarArchivo();
 
             Console.WriteLine("********************\nINGRESO DE ASIENTOS:\n********************\n");
             laFecha = Validaciones.PedirFecha("Ingrese la fecha del asiento que desea cargar:");
@@ -198,7 +197,7 @@ namespace A873263.Actividad03
                             {
                                 if (d.Fecha == laFecha)
                                 {
-                                    Console.WriteLine($" {d.NroAsiento}         | {d.Fecha} |     {d.CodigoCuenta}         |      {d.Debe}     |   {d.Haber}");
+                                    Console.WriteLine($" {d.NroAsiento}         | {d.Fecha} |     {d.CodigoCuenta}       |      {d.Debe}     |   {d.Haber}");
                                 }
                             }
                             Console.WriteLine();
